@@ -1,0 +1,230 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2074485183327431486
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2074485183327430848}
+  - component: {fileID: 2074485183327431487}
+  - component: {fileID: 2074485183327430849}
+  - component: {fileID: 2074485183327430850}
+  - component: {fileID: 2074485183327430852}
+  - component: {fileID: 2074485183327430851}
+  - component: {fileID: 2074485183327430854}
+  - component: {fileID: 2074485183327430853}
+  - component: {fileID: 2074485183327430856}
+  - component: {fileID: 2074485183327430855}
+  - component: {fileID: 2074485183327430857}
+  m_Layer: 0
+  m_Name: DemoControler
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &2074485183327430848
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2074485183327431486}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2074485183327431487
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2074485183327431486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9639082ce0765834888e0d87de94d95d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _lensConfig: {fileID: 0}
+  _autoLoadLensConfig: 0
+  _lensEntries:
+  - lensName: BaseLens/EB_D3.1_PS2(z,x,y)=(-2.0,0.0,0.0)_img
+    key: 49
+  - lensName: BaseLens/EB_D3.1_PS4
+    key: 50
+  - lensName: BaseLens/EB_D3.1_x=0,y=0,z=-2_PS-full_img
+    key: 51
+--- !u!114 &2074485183327430849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2074485183327431486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6909116ef20b8545ae03f076c2295c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _lensSelector: {fileID: 2074485183327431487}
+  _lensNameLabel: {fileID: 0}
+--- !u!114 &2074485183327430850
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2074485183327431486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe2b1ac5ad113b344945f4448b7d4844, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _toggleKey: 32
+  _objects:
+  - obj:
+    - {fileID: 0}
+    - {fileID: 0}
+    label: 
+  - obj:
+    - {fileID: 0}
+    - {fileID: 0}
+    label: 
+  - obj:
+    - {fileID: 0}
+    - {fileID: 0}
+    label: 
+  - obj:
+    - {fileID: 0}
+    - {fileID: 0}
+    label: 
+  _label: {fileID: 0}
+--- !u!114 &2074485183327430852
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2074485183327431486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe2b1ac5ad113b344945f4448b7d4844, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _toggleKey: 13
+  _objects:
+  - obj:
+    - {fileID: 0}
+    label: 
+  - obj:
+    - {fileID: 0}
+    label: 
+  - obj:
+    - {fileID: 0}
+    label: 
+  _label: {fileID: 0}
+--- !u!114 &2074485183327430851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2074485183327431486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6320b97b71bf3de4f99e1107356c35e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _toggleKey: 98
+  _lensConfig: {fileID: 0}
+--- !u!114 &2074485183327430854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2074485183327431486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0d11060ef124fe438887e6033c99458, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultImage: {fileID: 2800000, guid: 18e0d0fc012b19346a607107ab4722f5, type: 3}
+  ImageFolder: Images
+  ImageDisplay: {fileID: 0}
+  PixelPerfect: {fileID: 0}
+--- !u!114 &2074485183327430853
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2074485183327431486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32bad2c54b7034343b435c8c40907e87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ToogleKey: 110
+  Loader: {fileID: 2074485183327430854}
+--- !u!114 &2074485183327430856
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2074485183327431486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e98e51302d00ed44a1ed809908ec7fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &2074485183327430855
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2074485183327431486}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7119f85cf9b276d43b549591c00ccba5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lensConfigurator: {fileID: 0}
+  MeasurementsTag: Test
+  LensRoot: EB_D3.1_x,y_z=-2_img/*
+  YesChoice: 121
+  NoChoice: 110
+  UseRandomSequence: 0
+  OnSequenceEnd:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &2074485183327430857
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2074485183327431486}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7119f85cf9b276d43b549591c00ccba5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lensConfigurator: {fileID: 0}
+  MeasurementsTag: Test
+  LensRoot: EB_D3.0_x,y_z=-3_img/*
+  YesChoice: 121
+  NoChoice: 110
+  UseRandomSequence: 0
+  OnSequenceEnd:
+    m_PersistentCalls:
+      m_Calls: []

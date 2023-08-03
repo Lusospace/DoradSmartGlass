@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.LusoSpace.DoradGlass">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"  />
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    
+	<uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
+    
+	<uses-permission android:name="android.permission.WRITE_SETTINGS" />
+
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <uses-permission android:name="com.google.android.things.permission.USE_PERIPHERAL_IO" />
+	
+	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+	<uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+	<compatible-screens>
+		<!-- all small size screens -->
+		<screen android:screenSize="small" android:screenDensity="ldpi" />
+		<screen android:screenSize="small" android:screenDensity="mdpi" />
+		<screen android:screenSize="small" android:screenDensity="hdpi" />
+		<screen android:screenSize="small" android:screenDensity="xhdpi" />
+		<!-- all normal size screens -->
+		<screen android:screenSize="normal" android:screenDensity="ldpi" />
+		<screen android:screenSize="normal" android:screenDensity="mdpi" />
+		<screen android:screenSize="normal" android:screenDensity="hdpi" />
+		<screen android:screenSize="normal" android:screenDensity="xhdpi" />
+	</compatible-screens>
+  <application android:icon="@drawable/app_icon" android:label="@string/app_name" android:debuggable="true" android:requestLegacyExternalStorage="true">
+	  <uses-library android:name="com.android.future.usb.accessory" />
+      <activity android:name="com.unity3d.player.UnityPlayerActivity"
+          android:label="@string/app_name"
+          android:configChanges="fontScale|keyboard|keyboardHidden|locale|mnc|mcc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|touchscreen" 
+		  android:exported="true"
+				>
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+	    <data android:exported="true" />
+      </intent-filter>
+    </activity>
+  </application>
+</manifest>

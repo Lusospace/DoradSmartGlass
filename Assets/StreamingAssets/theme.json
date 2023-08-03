@@ -1,0 +1,58 @@
+{
+  "widgets": [
+    {
+      "name": "Clock",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 10,
+        "y": 10,
+        "z": 10
+      }
+    },
+    {
+      "name": "Calendar",
+      "position": {
+        "x": 5,
+        "y": 0,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 45,
+        "z": 0
+      },
+      "scale": {
+        "x": 12,
+        "y": 12,
+        "z": 12
+      }
+    },
+    {
+      "name": "BatteryPercentage",
+      "position": {
+        "x": 5,
+        "y": 0,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 45,
+        "z": 0
+      },
+      "scale": {
+        "x": 12,
+        "y": 12,
+        "z": 12
+      }
+    }
+  ]
+}

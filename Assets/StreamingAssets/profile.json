@@ -1,0 +1,39 @@
+{
+  "name": "My Custom Profile",
+  "screen_width": 1080,
+  "screen_height": 1920,
+  "meter_to_device_unit": 0.0254,
+  "distortion_coefficients": [0.2, 0.0],
+  "left_eye": {
+    "field_of_view": 40,
+    "distortion": {
+      "k1": -0.05,
+      "k2": 0.15
+    },
+    "screen": {
+      "width": 0.1102,
+      "height": 0.062
+    },
+    "translation": {
+      "x": -0.032,
+      "y": 0,
+      "z": 0
+    }
+  },
+  "right_eye": {
+    "field_of_view": 40,
+    "distortion": {
+      "k1": -0.05,
+      "k2": 0.15
+    },
+    "screen": {
+      "width": 0.1102,
+      "height": 0.062
+    },
+    "translation": {
+      "x": 0.032,
+      "y": 0,
+      "z": 0
+    }
+  }
+}
