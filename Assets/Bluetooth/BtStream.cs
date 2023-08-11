@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Assets.Bluetooth
@@ -12,6 +14,18 @@ namespace Assets.Bluetooth
         public string message = null;
         // Define an event for data reception
         public event EventHandler<string> DataReceived;
+
+        private enum ReadState
+        {
+            WaitingForHeader,
+            ReceivingData,
+        }
+
+        private ReadState readState = ReadState.WaitingForHeader;
+        private List<byte> receivedDataList = new List<byte>();
+        private string header = "DoradHeader";
+        private string footer = "DoradFooter";
+
 
         override public bool CanRead { get { return IsInputStream; } }
         override public bool CanSeek { get { return false; } }
@@ -60,32 +74,64 @@ namespace Assets.Bluetooth
              */
             //buffer = new byte[2048];
             //count = 2048;
-            var jniBuffer = AndroidJNI.NewByteArray(count);
-            jvalue[] args = new jvalue[3];
-            args[0].l = jniBuffer;
-            args[1].i = 0;
-            args[2].i = count;
+            try
+            {
+                var jniBuffer = AndroidJNI.NewSByteArray(count);
+                jvalue[] args = new jvalue[3];
+                args[0].l = jniBuffer;
+                args[1].i = 0;
+                args[2].i = count;
 
-            IntPtr methodId = AndroidJNIHelper.GetMethodID(
-                JavaObject.GetRawClass(),
-                "read", "([BII)I");
+                IntPtr methodId = AndroidJNIHelper.GetMethodID(
+                    JavaObject.GetRawClass(),
+                    "read", "([BII)I");
 
-            var r = AndroidJNI.CallIntMethod(
-                JavaObject.GetRawObject(),
-                methodId,
-                args);
+                var r = AndroidJNI.CallIntMethod(
+                    JavaObject.GetRawObject(),
+                    methodId,
+                    args);
 
-            var manBuff = AndroidJNI.FromByteArray(jniBuffer);
+                var manBuff = AndroidJNI.FromSByteArray(jniBuffer);
 
-            Array.Copy(manBuff, 0, buffer, offset, count);
+                Array.Copy(manBuff, 0, buffer, offset, count);
 
-            string receivedData = Encoding.UTF8.GetString(buffer, offset, count);
-            message = receivedData.TrimEnd('\0');
-            //Debug.Log(message);
-            // Raise the DataReceived event with the received data
-            OnDataReceived(message);
-            return r;
+                string receivedData = Encoding.UTF8.GetString(buffer, offset, count);
+
+                //Debug.Log(message);
+                // Raise the DataReceived event with the received data
+
+                if (receivedData.Contains(header))
+                {
+                    message = null;
+                    readState = ReadState.ReceivingData;
+                    message += (receivedData.TrimEnd('\0')).TrimStart(header);
+                }
+                else if (readState == ReadState.ReceivingData)
+                {
+                    if (receivedData.Contains(footer))
+                    {
+                        message += (receivedData.TrimEnd('\0')).TrimEnd(footer);
+                        readState = ReadState.WaitingForHeader;
+                        OnDataReceived(message);
+                    }
+                    else
+                    {
+                        message += receivedData.TrimEnd('\0');
+                    }
+
+                }
+
+
+
+                return r;
+            }
+            catch (Exception e)
+            {
+                return -1;
+            }
+            
         }
+        
 
         override public void Write(byte[] buffer, int offset, int count)
         {

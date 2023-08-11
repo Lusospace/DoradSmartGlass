@@ -144,15 +144,30 @@ public class ConfigurationManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        viewManager.StartActivityWelcomePanel();
+        viewManager.StartActivityPairingPanel();
         // Wait for a short delay before calling StartActivityPreviewWidgets
-
+        BluetoothServiceObject.StartReadCouroutine();
         //viewManager.StartActivityPreviewWidgets();
-        BluetoothServiceObject.CreateBluetoothConnection();
+        //StartCoroutine(BluetoothConnectionCoroutine());
         // Subscribe to the DataReceived event of the Bluetooth service
         BluetoothServiceObject.DataReceived += OnBluetoothDataReceived;
 
         
+    }
+
+    private IEnumerator BluetoothConnectionCoroutine()
+    {
+        // Wait for a short delay before starting the Bluetooth connection
+        yield return new WaitForSeconds(1f);
+
+        while (true)
+        {
+            // Start the Bluetooth connection
+            BluetoothServiceObject.CreateBluetoothConnection();
+
+            // Yielding here will allow the coroutine to be resumed in the next frame
+            yield return null;
+        }
     }
 
     void StartConfiguration(string jsonAuto)
@@ -297,7 +312,11 @@ public class ConfigurationManager : MonoBehaviour
         {
             StartConfiguration(data);
             if (isSetConf)
-                viewManager.StartActivityPreviewWidgets();
+            {
+                viewManager.StartActivityDisplayPanel();  
+                LogcatLogger.Log("Changed to Display view");
+            }
+                
         }
             
         if (data.Contains("CommandDTO"))
@@ -333,8 +352,8 @@ public class ConfigurationManager : MonoBehaviour
 
     public void StartDebug(byte[] image)
     {
-        viewManager.viewlist[4].SetActive(true);
-        RawImage rawImage = viewManager.viewlist[4].GetComponent<RawImage>();
+        viewManager.viewList[4].SetActive(true);
+        RawImage rawImage = viewManager.viewList[4].GetComponent<RawImage>();
         Texture2D texture = new Texture2D(1, 1);
         texture.LoadImage(image);
 
@@ -346,7 +365,7 @@ public class ConfigurationManager : MonoBehaviour
 
     public void StopDebug()
     {
-        viewManager.viewlist[4].SetActive(false);
+        viewManager.viewList[4].SetActive(false);
     }
 
     [System.Serializable]

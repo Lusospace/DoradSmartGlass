@@ -1,104 +1,78 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class ViewManager : MonoBehaviour
 {
-    public List<GameObject> viewlist;
-    private int viewCount;
-    // Start is called before the first frame update
-    void Start()
+    public enum ViewState
     {
-        viewCount = viewlist.Count;
-        for (int i = 1; i < viewCount; i++)
-        {
-            viewlist[i].SetActive(false);
-        }
-        viewlist[0].SetActive(true);
+        Welcome,
+        Pairing,
+        Display,
+        Complete,
+        GoodBye,
+        Debug
+    }
 
-    }
-    public void StartActivityWelcomePanel()
+    public GameObject[] viewList;
+    private Dictionary<ViewState, int> viewIndexMap = new Dictionary<ViewState, int>();
+    private ViewState currentViewState;
+
+    private void Start()
     {
-        
-        StartCoroutine(WaitCoroutineWelcome());
-       
+        InitializeViewIndexMap();
+        SwitchViewState(ViewState.Welcome);
     }
-    public void StartActivityPreviewWidgets()
+
+    private void InitializeViewIndexMap()
     {
-        foreach (GameObject view in viewlist)
+        for (int i = 0; i < viewList.Length; i++)
+        {
+            viewIndexMap[(ViewState)i] = i;
+        }
+    }
+
+    private void SwitchViewState(ViewState newState)
+    {
+        foreach (var view in viewList)
         {
             view.SetActive(false);
         }
-        //viewlist[2].SetActive(true);
-        StartCoroutine(WaitCoroutineDisplay());
+
+        viewList[viewIndexMap[newState]].SetActive(true);
+        currentViewState = newState;
     }
-    private void SwitchViews(int activeIndex)
+
+    private IEnumerator DelayedSwitchViewState(ViewState newState, float delay)
     {
-        for (int i = 0; i < viewCount; i++)
-        {
-            viewlist[i].SetActive(i == activeIndex);
-        }
-    }
-    private void DelayedSwitchViews(int activeIndex, float delay)
-    {
-        // Use a lambda function with Invoke to achieve delayed switching
-        Invoke("SwitchViews", delay);
-        StartCoroutine(DelayedSwitchViewsCoroutine(activeIndex, delay));
-    }
-    private IEnumerator DelayedSwitchViewsCoroutine(int activeIndex, float delay)
-    {
-        // Wait for the specified delay
         yield return new WaitForSeconds(delay);
-
-        // Switch the views after the delay
-        SwitchViews(activeIndex);
+        SwitchViewState(newState);
     }
-    IEnumerator WaitCoroutineWelcome()
+
+    public void StartActivityPairingPanel()
     {
-        
-        //Print the time of when the function is first called.
-        Debug.Log("Started Coroutine at timestamp : " + Time.time);
-
-
-        //yield on a new YieldInstruction that waits for 5 seconds.
-        yield return new WaitForSeconds(10);
-
-        viewlist[0].SetActive(false);
-        DelayedSwitchViews(1, 0f);
-        //After we have waited 5 seconds print the time again.
-        Debug.Log("Finished Coroutine at timestamp : " + Time.time);
-        
+        StartCoroutine(DelayedSwitchViewState(ViewState.Pairing, 5f));
     }
-    IEnumerator WaitCoroutinePairing()
+
+    public void StartActivityDisplayPanel()
     {
-        
-        //Print the time of when the function is first called.
-        Debug.Log("Started Coroutine at timestamp : " + Time.time);
-
-        //yield on a new YieldInstruction that waits for 5 seconds.
-        yield return new WaitForSeconds(60);
-        viewlist[1].SetActive(false);
-        viewlist[2].SetActive(true);
-        //After we have waited 5 seconds print the time again.
-        Debug.Log("Finished Coroutine at timestamp : " + Time.time);
-        
+        //preview widgets
+        SwitchViewState(ViewState.Display);
+        //StartCoroutine(DelayedSwitchViewState(ViewState.Complete, 1f));
     }
-    IEnumerator WaitCoroutineDisplay()
+    public void StartActivityCompletePanel()
     {
-        viewlist[1].SetActive(false);
-        //Print the time of when the function is first called.
-        Debug.Log("Started Coroutine at timestamp : " + Time.time);
-
-        //yield on a new YieldInstruction that waits for 5 seconds.
-        yield return new WaitForSeconds(1);
-        
-        DelayedSwitchViews(2, 0f);
-
-        //After we have waited 5 seconds print the time again.
-        Debug.Log("Finished Coroutine at timestamp : " + Time.time);
-
-
+        SwitchViewState(ViewState.Complete);
+        //StartCoroutine(DelayedSwitchViewState(ViewState.Complete, 1f));
     }
-
+    public void StartActivityGoodByePanel()
+    {
+        SwitchViewState(ViewState.GoodBye);
+        //StartCoroutine(DelayedSwitchViewState(ViewState.Complete, 1f));
+    }
+    public void StartActivityDebugPanel()
+    {
+        SwitchViewState(ViewState.Debug);
+        //StartCoroutine(DelayedSwitchViewState(ViewState.Complete, 1f));
+    }
 }

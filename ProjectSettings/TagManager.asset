@@ -5,9 +5,11 @@ TagManager:
   serializedVersion: 2
   tags:
   - Welcome
-  - Running
-  - Walking
-  - Cycling
+  - Pairing
+  - Display
+  - Complete
+  - GoodBye
+  - Debug
   layers:
   - Default
   - TransparentFX

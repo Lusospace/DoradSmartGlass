@@ -14,8 +14,11 @@ namespace Assets.Bluetooth
 
         public void connect()
         {
+            
             JavaObject.Call("connect");
             isConnected = true;
+            
+            
         }
 
         public void close()
