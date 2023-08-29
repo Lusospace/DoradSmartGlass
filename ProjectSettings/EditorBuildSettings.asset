@@ -14,6 +14,9 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Samples/Google Cardboard XR Plugin for Unity/1.21.0/Hello Cardboard/Scenes/HelloCardboard.unity
     guid: 145a2a45d7bc746b19cb68410368bf96
+  - enabled: 0
+    path: Assets/Scenes/DoradGlassTest.unity
+    guid: 1179186bb8b2ca949a278da6c2195eb1
   m_configObjects:
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 68074c34960f2954ea545ae99c049965, type: 2}
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 1ce1e47f4f364a14295667e91f899813, type: 2}
