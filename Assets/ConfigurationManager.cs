@@ -148,7 +148,7 @@ public class ConfigurationManager : MonoBehaviour
         // Wait for a short delay before calling StartActivityPreviewWidgets
         BluetoothServiceObject.StartReadCouroutine();
         //viewManager.StartActivityPreviewWidgets();
-        //StartCoroutine(BluetoothConnectionCoroutine());
+        StartCoroutine(BluetoothConnectionCoroutine());
         // Subscribe to the DataReceived event of the Bluetooth service
         BluetoothServiceObject.DataReceived += OnBluetoothDataReceived;
 
