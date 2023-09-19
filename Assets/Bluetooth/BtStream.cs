@@ -99,12 +99,6 @@ namespace Assets.Bluetooth
                 {
                     byteBuff[i] = (byte)manBuff[i];
                 }
-<<<<<<< HEAD
-=======
-
-                Array.Copy(byteBuff, 0, buffer, offset, count);
->>>>>>> 05e2302c3bb0595c826e7ad6092e9255e175ea71
-
                 Array.Copy(byteBuff, 0, buffer, offset, count);
                 string receivedData = Encoding.UTF8.GetString(buffer, offset, count);
 
