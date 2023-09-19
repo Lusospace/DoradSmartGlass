@@ -93,8 +93,14 @@ namespace Assets.Bluetooth
 
                 var manBuff = AndroidJNI.FromSByteArray(jniBuffer);
 
-                Array.Copy(manBuff, 0, buffer, offset, count);
+                // Convert sbyte array to byte array
+                byte[] byteBuff = new byte[manBuff.Length];
+                for (int i = 0; i < manBuff.Length; i++)
+                {
+                    byteBuff[i] = (byte)manBuff[i];
+                }
 
+                Array.Copy(byteBuff, 0, buffer, offset, count);
                 string receivedData = Encoding.UTF8.GetString(buffer, offset, count);
 
                 //Debug.Log(message);
