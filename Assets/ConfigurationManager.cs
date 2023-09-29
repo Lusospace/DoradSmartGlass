@@ -10,8 +10,10 @@ using Assets.Bluetooth;
 
 public class ConfigurationManager : MonoBehaviour
 {
+    public CallSsd1333 CallSsd1333Object;
     public DoradBluetoothService BluetoothServiceObject;
     public LocationTracker LocationTrackerObject;
+    public KMLNavigation KMLNavigationObject;
     public CountdownTimer CountdownTimerObject;
     public ViewManager viewManager;
     public List<GameObject> widgetList;
@@ -27,6 +29,7 @@ public class ConfigurationManager : MonoBehaviour
     private RenderTexture renderTexture;
     public string jsonText;
     private CommandDTO commandDTO;
+    public ToastMessage toastMessage;
     private string jsonAuto = @"{
       ""Avatar"": {
         ""Active"": true,
@@ -144,6 +147,7 @@ public class ConfigurationManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        viewManager.StartActivityWelcomePanel();
         viewManager.StartActivityPairingPanel();
         // Wait for a short delay before calling StartActivityPreviewWidgets
         BluetoothServiceObject.StartReadCouroutine();
@@ -151,8 +155,16 @@ public class ConfigurationManager : MonoBehaviour
         StartCoroutine(BluetoothConnectionCoroutine());
         // Subscribe to the DataReceived event of the Bluetooth service
         BluetoothServiceObject.DataReceived += OnBluetoothDataReceived;
+        viewManager.StartActivityDisplayPanel();
+        int contrast = CallSsd1333Object.GetDisplayContrast();
+        LogcatLogger.Log("Level of Contrast: "+contrast);
+        CallSsd1333Object.SetDisplayContrast(150);
+        Invoke(nameof(StartActivity), 5f);
+        Invoke(nameof(StopActivity), 30f);
+        //viewManager.StartActivityCompletePanel();
+        //viewManager.StartActivityGoodByePanel();
+        //viewManager.StartActivityDebugPanel();
 
-        
     }
 
     private IEnumerator BluetoothConnectionCoroutine()
@@ -297,6 +309,7 @@ public class ConfigurationManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        CallSsd1333Object.UpdateScreenCaptured();
         //BluetoothServiceObject.reader.ReadLine();
         // Debug.Log("Received Message" + jsonText);
 
@@ -319,7 +332,7 @@ public class ConfigurationManager : MonoBehaviour
                 
         }
             
-        if (data.Contains("CommandDTO"))
+        if (data.Contains("Command"))
             StartCommandActions(data);
         
         //Start Activity without command from smartphone for now
@@ -328,6 +341,7 @@ public class ConfigurationManager : MonoBehaviour
     }
     public void StartActivity()
     {
+        toastMessage.showMessage("Activity Started", 3f);
         CountdownTimerObject.StartCountdown();
         if (newRun)
         {
@@ -344,14 +358,21 @@ public class ConfigurationManager : MonoBehaviour
     }
     public void StopActivity()
     {
+        toastMessage.showMessage("Activity Stopped", 3f);
         if (newRun)
         {
             LocationTrackerObject.SetActivity(false);
+            LocationTrackerObject.StopActivity();
+        }
+        else
+        {
+            KMLNavigationObject.StartActivity();
         }
     }
 
     public void StartDebug(byte[] image)
     {
+        toastMessage.showMessage("Debug Started", 3f);
         viewManager.viewList[4].SetActive(true);
         RawImage rawImage = viewManager.viewList[4].GetComponent<RawImage>();
         Texture2D texture = new Texture2D(1, 1);
@@ -365,6 +386,7 @@ public class ConfigurationManager : MonoBehaviour
 
     public void StopDebug()
     {
+        toastMessage.showMessage("Debug Stopped", 3f);
         viewManager.viewList[4].SetActive(false);
     }
 

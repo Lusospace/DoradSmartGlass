@@ -4,6 +4,10 @@ using TMPro;
 using System;
 using System.Text;
 using System.Collections;
+using System.Collections.Generic;
+using System.Xml;
+using UnityEngine.Networking;
+using Newtonsoft.Json;
 
 public class LocationTracker : MonoBehaviour
 {
@@ -18,11 +22,12 @@ public class LocationTracker : MonoBehaviour
     int stepCount = 0;
     float stepThreshold = 1.0f; // Adjust this value based on the user's average step length
     private Vector3 previousAcceleration;
+    bool isActivityStopped = false;
 
     void Start()
     {
         previousAcceleration = Input.acceleration;
-        StartActivity();
+        //StartActivity();
         Input.location.Start();
         // Check if GPS is available on the device
         if (!Input.location.isEnabledByUser)
@@ -38,45 +43,13 @@ public class LocationTracker : MonoBehaviour
         longitude_pre = 0.0f;
         
 
+    }
+    void StartKMLWriting()
+    {
         // Open KML file for writing
         string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
         string filename = "route_" + timestamp + ".kml";
-        kmlFileName = Application.persistentDataPath + "/"+ filename;
-        /*if (File.Exists(kmlFileName))
-        {
-            kmlStreamWriter = File.AppendText(kmlFileName);
-        }
-        else
-        {
-            kmlStreamWriter = new StreamWriter(kmlFileName);
-            // ... rest of the code to write KML header
-        }
-        kmlStreamWriter.WriteLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-        kmlStreamWriter.WriteLine("<kml xmlns=\"http://www.opengis.net/kml/2.2\">");
-        kmlStreamWriter.WriteLine("<Document>");
-        kmlStreamWriter.WriteLine("<name>Route</name>");
-        kmlStreamWriter.WriteLine("<Style id=\"yellowLineGreenPoly\">");
-        kmlStreamWriter.WriteLine("<LineStyle>");
-        kmlStreamWriter.WriteLine("<color>7f00ffff</color>");
-        kmlStreamWriter.WriteLine("<width>4</width>");
-        kmlStreamWriter.WriteLine("</LineStyle>");
-        kmlStreamWriter.WriteLine("<PolyStyle>");
-        kmlStreamWriter.WriteLine("<color>7f00ff00</color>");
-        kmlStreamWriter.WriteLine("</PolyStyle>");
-        kmlStreamWriter.WriteLine("</Style>");
-        kmlStreamWriter.WriteLine("<Placemark>");
-        kmlStreamWriter.WriteLine("<name>Route</name>");
-        kmlStreamWriter.WriteLine("<styleUrl>#yellowLineGreenPoly</styleUrl>");
-        kmlStreamWriter.WriteLine("<LineString>");
-        kmlStreamWriter.WriteLine("<extrude>1</extrude>");
-        kmlStreamWriter.WriteLine("<tessellate>1</tessellate>");
-        kmlStreamWriter.WriteLine("<altitudeMode>clampToGround</altitudeMode>");
-        kmlStreamWriter.WriteLine("<coordinates>");
-        kmlStreamWriter.WriteLine("</coordinates>");
-        kmlStreamWriter.WriteLine("</LineString>");
-        kmlStreamWriter.WriteLine("</Placemark>");
-        kmlStreamWriter.WriteLine("</Document>");
-        kmlStreamWriter.WriteLine("</kml>");*/
+        kmlFileName = Application.persistentDataPath + "/" + filename;
         // Create the KML file template
         kmlStringBuilder = new StringBuilder();
         kmlStringBuilder.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
@@ -105,7 +78,6 @@ public class LocationTracker : MonoBehaviour
         kmlStringBuilder.AppendLine("    </Placemark>");
         kmlStringBuilder.AppendLine("  </Document>");
         kmlStringBuilder.AppendLine("</kml>");
-
         try
         {
             // Write the KML file template to disk
@@ -116,12 +88,9 @@ public class LocationTracker : MonoBehaviour
             Debug.LogError("Failed to write KML file template: " + ex.Message);
         }
         StartCoroutine(CountSteps());
-
     }
-
     void Update()
-    {
-       
+    { 
         // Get location
         if(isActivityStarted) { 
             if (Input.location.status == LocationServiceStatus.Running) {
@@ -166,6 +135,96 @@ public class LocationTracker : MonoBehaviour
                 Input.location.Start();
             }
         }
+        else
+        {
+            if (isActivityStopped)
+            {
+                kmlFileName = GetKMLFilePath();
+                List<RoutePoint> routePoints = LoadKMLData();
+                string json = ConvertRoutePointsToJson(routePoints);
+                Debug.Log(json);
+            }
+        }
+    }
+    private List<RoutePoint> LoadKMLData()
+    {
+        List<RoutePoint> routePoints = new List<RoutePoint>();
+
+        // Load and parse the KML file
+        XmlDocument xmlDoc = new XmlDocument();
+        xmlDoc.Load(kmlFileName);
+
+        // Retrieve the coordinates from the KML data
+        XmlNamespaceManager nsManager = new XmlNamespaceManager(xmlDoc.NameTable);
+        nsManager.AddNamespace("kml", "http://www.opengis.net/kml/2.2");
+
+        XmlNodeList coordinateNodes = xmlDoc.SelectNodes("//kml:coordinates", nsManager);
+        if (coordinateNodes != null)
+        {
+            foreach (XmlNode node in coordinateNodes)
+            {
+                string[] coordinateStrings = node.InnerText.Trim().Split('\n');
+                foreach (string coordinateString in coordinateStrings)
+                {
+                    string[] coordinate = coordinateString.Trim().Split(',');
+                    float longitude, latitude;
+                    if (float.TryParse(coordinate[0], out longitude) &&
+                        float.TryParse(coordinate[1], out latitude))
+                    {
+                        RoutePoint waypoint = new RoutePoint
+                        {
+                            Longitude = longitude,
+                            Latitude = latitude
+                        };
+
+                        // Check if the waypoint is unique, then add it to the list
+                        if (!routePoints.Contains(waypoint))
+                        {
+                            routePoints.Add(waypoint);
+                        }
+                    }
+                }
+            }
+        }
+
+        return routePoints;
+    }
+
+    private string GetKMLFilePath()
+    {
+        string streamingAssetsPath = Application.streamingAssetsPath;
+        string kmlFilePath = Path.Combine(streamingAssetsPath, kmlFileName);
+
+        // Check if we're running on Android and use UnityWebRequest for file access
+        if (Application.platform == RuntimePlatform.Android)
+        {
+            UnityWebRequest www = UnityWebRequest.Get(kmlFilePath);
+            www.SendWebRequest();
+
+            while (!www.isDone)
+            {
+                // Wait until the request is done
+            }
+
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("Failed to load KML file: " + www.error);
+                return string.Empty;
+            }
+
+            string filePath = Path.Combine(Application.persistentDataPath, kmlFileName);
+            File.WriteAllBytes(filePath, www.downloadHandler.data);
+            return filePath;
+        }
+        else
+        {
+            return kmlFilePath;
+        }
+    }
+    private string ConvertRoutePointsToJson(List<RoutePoint> routePoints)
+    {
+        string json = JsonConvert.SerializeObject(new { RoutesDTOs = routePoints }, Newtonsoft.Json.Formatting.Indented);
+        return json;
     }
 
     void OnApplicationQuit()
@@ -184,7 +243,14 @@ public class LocationTracker : MonoBehaviour
     public void SetActivity(bool activity) { isActivityStarted = activity; }
     public void StartActivity()
     {
+        StartKMLWriting();
         SetActivity(true);
+
+    }
+    public void StopActivity()
+    {
+        SetActivity(false);
+        isActivityStopped = true;
     }
     IEnumerator CountSteps()
     {
@@ -251,5 +317,11 @@ public class LocationTracker : MonoBehaviour
         // Update the previousAcceleration to the current one for the next iteration
         previousAcceleration = currentAcceleration;
     }
+}
+[Serializable]
+public class RoutePoint
+{
+    public float Latitude;
+    public float Longitude;
 }
 

@@ -29,6 +29,10 @@ public class KMLNavigation : MonoBehaviour
 
     void Start()
     {
+        
+    }
+    public void StartActivity()
+    {
         startpoint.gameObject.SetActive(true);
         endpoint.gameObject.SetActive(true);
         Input.location.Start();

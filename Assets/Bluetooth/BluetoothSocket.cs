@@ -48,5 +48,17 @@ namespace Assets.Bluetooth
             return new BtStream(ostream, false);
         }
 
+        public BluetoothSocket InputStream()
+        {
+            var inStream = JavaObject.Call<AndroidJavaObject>("inputStream");
+            return new BluetoothSocket(inStream);
+        }
+
+        public BluetoothSocket OutputStream()
+        {
+            var outStream = JavaObject.Call<AndroidJavaObject>("outputStream");
+            return new BluetoothSocket(outStream);
+        }
+
     }
 }

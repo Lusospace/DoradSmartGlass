@@ -21,7 +21,7 @@ public class ViewManager : MonoBehaviour
     private void Start()
     {
         InitializeViewIndexMap();
-        SwitchViewState(ViewState.Welcome);
+        //SwitchViewState(ViewState.Welcome);
     }
 
     private void InitializeViewIndexMap()
@@ -52,27 +52,34 @@ public class ViewManager : MonoBehaviour
     public void StartActivityPairingPanel()
     {
         StartCoroutine(DelayedSwitchViewState(ViewState.Pairing, 5f));
+
+    }
+
+    public void StartActivityWelcomePanel()
+    {
+        StartCoroutine(DelayedSwitchViewState(ViewState.Welcome, 0f));
+        
     }
 
     public void StartActivityDisplayPanel()
     {
         //preview widgets
-        SwitchViewState(ViewState.Display);
-        //StartCoroutine(DelayedSwitchViewState(ViewState.Complete, 1f));
+        //SwitchViewState(ViewState.Display);
+        StartCoroutine(DelayedSwitchViewState(ViewState.Display, 5f));
     }
     public void StartActivityCompletePanel()
     {
-        SwitchViewState(ViewState.Complete);
-        //StartCoroutine(DelayedSwitchViewState(ViewState.Complete, 1f));
+        //SwitchViewState(ViewState.Complete);
+        StartCoroutine(DelayedSwitchViewState(ViewState.Complete, 10f));
     }
     public void StartActivityGoodByePanel()
     {
-        SwitchViewState(ViewState.GoodBye);
-        //StartCoroutine(DelayedSwitchViewState(ViewState.Complete, 1f));
+        //SwitchViewState(ViewState.GoodBye);
+        StartCoroutine(DelayedSwitchViewState(ViewState.GoodBye, 15f));
     }
     public void StartActivityDebugPanel()
     {
-        SwitchViewState(ViewState.Debug);
-        //StartCoroutine(DelayedSwitchViewState(ViewState.Complete, 1f));
+        //SwitchViewState(ViewState.Debug);
+        StartCoroutine(DelayedSwitchViewState(ViewState.Debug,20f));
     }
 }

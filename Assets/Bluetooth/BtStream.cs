@@ -4,6 +4,7 @@ using System.Text;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using System.Runtime.InteropServices;
 
 namespace Assets.Bluetooth
 {
@@ -74,8 +75,8 @@ namespace Assets.Bluetooth
              */
             //buffer = new byte[2048];
             //count = 2048;
-            try
-            {
+            /*try
+            {*/
                 var jniBuffer = AndroidJNI.NewSByteArray(count);
                 jvalue[] args = new jvalue[3];
                 args[0].l = jniBuffer;
@@ -85,58 +86,79 @@ namespace Assets.Bluetooth
                 IntPtr methodId = AndroidJNIHelper.GetMethodID(
                     JavaObject.GetRawClass(),
                     "read", "([BII)I");
-
+                
                 var r = AndroidJNI.CallIntMethod(
                     JavaObject.GetRawObject(),
                     methodId,
                     args);
 
-                var manBuff = AndroidJNI.FromSByteArray(jniBuffer);
-
-                // Convert sbyte array to byte array
-                byte[] byteBuff = new byte[manBuff.Length];
-                for (int i = 0; i < manBuff.Length; i++)
+                if (r > 0)
                 {
-                    byteBuff[i] = (byte)manBuff[i];
-                }
-                Array.Copy(byteBuff, 0, buffer, offset, count);
-                string receivedData = Encoding.UTF8.GetString(buffer, offset, count);
+                    var manBuff = AndroidJNI.FromSByteArray(jniBuffer);
 
-                //Debug.Log(message);
-                // Raise the DataReceived event with the received data
-
-                if (receivedData.Contains(header))
-                {
-                    message = null;
-                    readState = ReadState.ReceivingData;
-                    message += (receivedData.TrimEnd('\0')).TrimStart(header);
-                }
-                else if (readState == ReadState.ReceivingData)
-                {
-                    if (receivedData.Contains(footer))
+                    // Convert sbyte array to byte array
+                    byte[] byteBuff = new byte[manBuff.Length];
+                    for (int i = 0; i < manBuff.Length; i++)
                     {
-                        message += (receivedData.TrimEnd('\0')).TrimEnd(footer);
-                        readState = ReadState.WaitingForHeader;
-                        OnDataReceived(message);
+                        byteBuff[i] = (byte)manBuff[i];
                     }
-                    else
+                    Array.Copy(byteBuff, 0, buffer, offset, count);
+                    string receivedData = Encoding.UTF8.GetString(buffer, offset, count);
+
+                    //Debug.Log(message);
+                    // Raise the DataReceived event with the received data
+
+                    if (receivedData.Contains(header))
                     {
-                        message += receivedData.TrimEnd('\0');
+                        if (receivedData.Contains(footer) && receivedData.Contains(header))
+                        {
+                            message = null;
+                            readState = ReadState.ReceivingData;
+                            message += (receivedData.TrimEnd('\0')).TrimStart(header);
+                            message = message.TrimEnd(footer);
+                            readState = ReadState.WaitingForHeader;
+                            OnDataReceived(message);
+                        }
+                        else
+                        {
+                            message = null;
+                            readState = ReadState.ReceivingData;
+                            message += (receivedData.TrimEnd('\0')).TrimStart(header);
+                        }
                     }
 
+                    else if (readState == ReadState.ReceivingData)
+                    {
+                        if (receivedData.Contains(footer))
+                        {
+                            message += (receivedData.TrimEnd('\0')).TrimEnd(footer);
+                            readState = ReadState.WaitingForHeader;
+                            OnDataReceived(message);
+                        }
+                        else
+                        {
+                            message += receivedData.TrimEnd('\0');
+                        }
+
+                    }
+                    
                 }
-
-
-
+                else
+                {
+                    Debug.Log("Bluetooth communication");
+                    LogcatLogger.Log("Bluetooth communication");
+                }
                 return r;
+
+                /*}
+                catch (Exception e)
+                {
+                    return 0;
+                }*/
+
             }
-            catch (Exception e)
-            {
-                return -1;
-            }
-            
-        }
-        
+
+
 
         override public void Write(byte[] buffer, int offset, int count)
         {
