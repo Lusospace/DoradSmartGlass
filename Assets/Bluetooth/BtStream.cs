@@ -4,6 +4,7 @@ using System.Text;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using System.Runtime.InteropServices;
 
 namespace Assets.Bluetooth
 {
@@ -14,6 +15,7 @@ namespace Assets.Bluetooth
         public string message = null;
         // Define an event for data reception
         public event EventHandler<string> DataReceived;
+
 
         private enum ReadState
         {
@@ -74,8 +76,8 @@ namespace Assets.Bluetooth
              */
             //buffer = new byte[2048];
             //count = 2048;
-            try
-            {
+            /*try
+            {*/
                 var jniBuffer = AndroidJNI.NewSByteArray(count);
                 jvalue[] args = new jvalue[3];
                 args[0].l = jniBuffer;
@@ -85,58 +87,92 @@ namespace Assets.Bluetooth
                 IntPtr methodId = AndroidJNIHelper.GetMethodID(
                     JavaObject.GetRawClass(),
                     "read", "([BII)I");
-
+                
                 var r = AndroidJNI.CallIntMethod(
                     JavaObject.GetRawObject(),
                     methodId,
                     args);
 
-                var manBuff = AndroidJNI.FromSByteArray(jniBuffer);
-
-                // Convert sbyte array to byte array
-                byte[] byteBuff = new byte[manBuff.Length];
-                for (int i = 0; i < manBuff.Length; i++)
+                if (r > 0)
                 {
-                    byteBuff[i] = (byte)manBuff[i];
+                    var manBuff = AndroidJNI.FromSByteArray(jniBuffer);
+
+                    // Convert sbyte array to byte array
+                    byte[] byteBuff = new byte[manBuff.Length];
+                    for (int i = 0; i < manBuff.Length; i++)
+                    {
+                        byteBuff[i] = (byte)manBuff[i];
+                    }
+                    Array.Copy(byteBuff, 0, buffer, offset, count);
+                    string receivedData = Encoding.UTF8.GetString(buffer, offset, count);
+
+                    //Debug.Log(message);
+                    // Raise the DataReceived event with the received data
+
+                    if (receivedData.Contains(header))
+                    {
+                        if (receivedData.Contains(footer) && receivedData.Contains(header))
+                        {
+                            message = null;
+                            readState = ReadState.ReceivingData;
+                            message += (receivedData.TrimEnd('\0')).TrimStart(header);
+                            message = message.TrimEnd(footer);
+                            readState = ReadState.WaitingForHeader;
+                            OnDataReceived(message);
+                        }
+                        else
+                        {
+                            message = null;
+                            readState = ReadState.ReceivingData;
+                            message += (receivedData.TrimEnd('\0')).TrimStart(header);
+                        }
+                    }
+
+                    else if (readState == ReadState.ReceivingData)
+                    {
+                        if (receivedData.Contains(footer))
+                        {
+                            message += (receivedData.TrimEnd('\0')).TrimEnd(footer);
+                            readState = ReadState.WaitingForHeader;
+                            OnDataReceived(message);
+                        }
+                        else
+                        {
+                            message += receivedData.TrimEnd('\0');
+                        }
+
+                    }
+                    
                 }
-                Array.Copy(byteBuff, 0, buffer, offset, count);
-                string receivedData = Encoding.UTF8.GetString(buffer, offset, count);
-
-                //Debug.Log(message);
-                // Raise the DataReceived event with the received data
-
-                if (receivedData.Contains(header))
+                else if (r == 0)
                 {
+                    // End of the stream, handle it accordingly
+                    // For example, you can log a message or perform cleanup
                     message = null;
-                    readState = ReadState.ReceivingData;
-                    message += (receivedData.TrimEnd('\0')).TrimStart(header);
+                    OnDataReceived(message);
+                    //Debug.Log("End of the stream");
+                    //LogcatLogger.Log("End of the stream");
+                    
+                // You may also want to raise an event or perform other cleanup actions
                 }
-                else if (readState == ReadState.ReceivingData)
+                else
                 {
-                    if (receivedData.Contains(footer))
-                    {
-                        message += (receivedData.TrimEnd('\0')).TrimEnd(footer);
-                        readState = ReadState.WaitingForHeader;
-                        OnDataReceived(message);
-                    }
-                    else
-                    {
-                        message += receivedData.TrimEnd('\0');
-                    }
-
-                }
-
-
-
+                    Debug.Log("Bluetooth communication");
+                    LogcatLogger.Log("Bluetooth communication");
+                    message = null;
+                    OnDataReceived(message);
+            }
                 return r;
+
+                /*}
+                catch (Exception e)
+                {
+                    return 0;
+                }*/
+
             }
-            catch (Exception e)
-            {
-                return -1;
-            }
-            
-        }
-        
+
+
 
         override public void Write(byte[] buffer, int offset, int count)
         {
@@ -173,7 +209,10 @@ namespace Assets.Bluetooth
         // Helper method to raise the DataReceived event
         protected virtual void OnDataReceived(string data)
         {
+            
             DataReceived?.Invoke(this, data);
+            
         }
+     
     }
 }

@@ -8,152 +8,94 @@ using Newtonsoft.Json;
 using UnityEngine.UI;
 using Assets.Bluetooth;
 
-public class ConfigurationManager : MonoBehaviour
+public class GameManager : MonoBehaviour
 {
+    public static GameManager Instance;
+    public CallSsd1333 CallSsd1333Object;
     public DoradBluetoothService BluetoothServiceObject;
     public LocationTracker LocationTrackerObject;
+    public KMLNavigation KMLNavigationObject;
     public CountdownTimer CountdownTimerObject;
     public ViewManager viewManager;
     public List<GameObject> widgetList;
     public List<GameObject> widgetPos;
-    public GameObject avatar;
+    public Character avatar;
     public GlassDTO glassConfig;
     public Canvas canvas;
     bool newRun = false;
     bool avatarRun = false;
     bool isSetConf = false;
-    float avatarSpeed = 0f;
+    float avatarSpeed = 0.0f;
     private Camera snapshotCamera;
     private RenderTexture renderTexture;
     public string jsonText;
     private CommandDTO commandDTO;
-    private string jsonAuto = @"{
-      ""Avatar"": {
-        ""Active"": true,
-        ""Speed"": 18.75
-      },
-      ""RoutesDTOs"": [
-        {
-          ""Latitude"": 38.70061856336034,
-          ""Longitude"": -8.957381918676203
-        },
-        {
-          ""Latitude"": 38.70671683905933,
-          ""Longitude"": -8.945225024701308
-        },
-        {
-          ""Latitude"": 38.701985630081595,
-          ""Longitude"": -8.944503277546072
-        },
-        {
-          ""Latitude"": 38.701872978433386,
-          ""Longitude"": -8.940750192338834
-        },
-        {
-          ""Latitude"": 38.71054663609023,
-          ""Longitude"": -8.939162348597312
-        },
-        {
-          ""Latitude"": 38.717755109243214,
-          ""Longitude"": -8.942193686649311
-        },
-        {
-          ""Latitude"": 38.7435419727561,
-          ""Longitude"": -8.928480490699792
-        },
-        {
-          ""Latitude"": 38.78327379379296,
-          ""Longitude"": -8.880556478454272
-        },
-        {
-          ""Latitude"": 38.925473761602376,
-          ""Longitude"": -8.881999972299806
-        },
-        {
-          ""Latitude"": 38.93692729913667,
-          ""Longitude"": -8.869585920414709
-        },
-        {
-          ""Latitude"": 38.93493556584553,
-          ""Longitude"": -8.86536198145887
-        }
-      ],
-      ""WidgetDTOs"": [
-        {
-          ""Name"": ""Distance"",
-          ""ZPosition"": 0,
-          ""GlassXPosition"": -50,
-          ""GlassYPosition"": 50
-        },
-        {
-          ""Name"": ""Speed"",
-          ""ZPosition"": 0,
-          ""GlassXPosition"": 42.59,
-          ""GlassYPosition"": 50
-        },
-        {
-          ""Name"": ""Altitude"",
-          ""ZPosition"": 0,
-          ""GlassXPosition"": -3.7,
-          ""GlassYPosition"": 1.67
-        }
-      ],
-      ""WidgetConfiguration"": true
-    }";
-    private string jsonManual = @"{
-      ""Avatar"": {
-        ""Active"": false,
-        ""Speed"": 0
-      },
-      ""RoutesDTOs"": [],
-      ""WidgetDTOs"": [
-        {
-          ""Name"": ""Time"",
-          ""ZPosition"": 6.531645173,
-          ""GlassXPosition"": -50,
-          ""GlassYPosition"": 50
-        },
-        {
-          ""Name"": ""Distance"",
-          ""ZPosition"": 6.531645173,
-          ""GlassXPosition"": 42.59,
-          ""GlassYPosition"": 50
-        },
-        {
-          ""Name"": ""Speed"",
-          ""ZPosition"": 6.531645173,
-          ""GlassXPosition"": -50,
-          ""GlassYPosition"": -46.67
-        },
-        {
-          ""Name"": ""Altitude"",
-          ""ZPosition"": 6.531645173,
-          ""GlassXPosition"": 42.59,
-          ""GlassYPosition"": -46.67
-        },
-        {
-          ""Name"": ""Navigation"",
-          ""ZPosition"": 6.531645173,
-          ""GlassXPosition"": -3.7,
-          ""GlassYPosition"": 1.67
-        }
-      ],
-      ""WidgetConfiguration"": false
-    }";
+    public ToastMessage toastMessage;
     
+    public GameObject Welcome;
+    public GameObject Pairing;
+    public GameObject Display;
+
     // Start is called before the first frame update
+    void Awake()
+    {
+        Instance = this;
+    }
     void Start()
     {
-        viewManager.StartActivityPairingPanel();
+        //viewManager.StartActivityWelcomePanel();
+        //viewManager.StartActivityPairingPanel();
+        //Display.SetActive(false);
+        Invoke(nameof(DisableWelcomePanel), 5f);
+        BluetoothServiceObject.DataReceived += OnBluetoothDataReceived;
+        Invoke(nameof(EnablePairingPanel), 5f);
+       
         // Wait for a short delay before calling StartActivityPreviewWidgets
         BluetoothServiceObject.StartReadCouroutine();
         //viewManager.StartActivityPreviewWidgets();
-        StartCoroutine(BluetoothConnectionCoroutine());
+        //StartCoroutine(BluetoothConnectionCoroutine());
         // Subscribe to the DataReceived event of the Bluetooth service
-        BluetoothServiceObject.DataReceived += OnBluetoothDataReceived;
-
         
+        //viewManager.StartActivityDisplayPanel();
+
+
+
+        //Invoke(nameof(StartActivity), 25f);
+        //Invoke(nameof(StopActivity), 35f);
+        //viewManager.StartActivityCompletePanel();
+        //viewManager.StartActivityGoodByePanel();
+        //viewManager.StartActivityDebugPanel();
     }
+
+    public void DisableWelcomePanel()
+    {
+        Welcome.SetActive(false);
+    }
+    public void EnablePairingPanel()
+    {
+        Pairing.SetActive(true);
+    }
+
+    public void DisablePairingPanel()
+    {
+        Pairing.SetActive(false);
+        //GameObject.FindGameObjectWithTag("Pairing").SetActive(false);
+    }
+
+    public void EnableDisplayPanel()
+    {
+        Display.SetActive(true);
+        //GameObject.FindGameObjectWithTag("Display").SetActive(true);
+        Display.transform.position = new Vector3(0f, 0f, 150f);
+    }
+
+    public void DisableDisplayPanel()
+    {
+        Display.SetActive(true);
+        GameObject.FindGameObjectWithTag("Display").SetActive(true);
+        Display.transform.position = new Vector3(0f, 0f, -150f);
+    }
+
 
     private IEnumerator BluetoothConnectionCoroutine()
     {
@@ -210,7 +152,8 @@ public class ConfigurationManager : MonoBehaviour
                     }
                     else
                     {
-                        correspondingObject.transform.position = CalculateRelativeWidgetPosition((float)widget.GlassXPosition, (float)widget.GlassYPosition, (float)widget.ZPosition);
+                        correspondingObject.transform.position = widgetPos[posCount].transform.position;
+                        Display.transform.position = new Vector3(0, 0, (float)widget.ZPosition);
                     }
                     correspondingObject.SetActive(true);
                     posCount++;
@@ -288,7 +231,17 @@ public class ConfigurationManager : MonoBehaviour
         if (commandDTO.Command == "StopRun")
             StopActivity();
         if (commandDTO.Command == "StartDebug")
+        {
             StartDebug(commandDTO.Image);
+        }
+        if (commandDTO.Command == "Brightness")
+        {
+            if (commandDTO.Value != 0)
+            {
+                SetContrast(commandDTO.Value);
+            }
+        }
+
         if (commandDTO.Command == "StopDebug")
             StopDebug();
 
@@ -297,8 +250,15 @@ public class ConfigurationManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //CallSsd1333Object.UpdateScreenCaptured();
         //BluetoothServiceObject.reader.ReadLine();
         // Debug.Log("Received Message" + jsonText);
+
+        // Update Avatar Distance
+        /*avatarSpeed = _gameTargetSpeed;
+        float playerSpeed = _currentPlayerSmoothedVelocity;
+        float speedDiff = playerSpeed - avatarSpeed;
+        cat.transform.localPosition += new Vector3(0f, 0f, speedDiff * -avatarSpeedMultiplier);*/
 
     }
     void OnBluetoothDataReceived(object sender, string data)
@@ -307,20 +267,31 @@ public class ConfigurationManager : MonoBehaviour
         // Example: Update a TextMeshPro UI element with the received data
         // yourTextMeshPro.text = data;
 
-        Debug.Log("Received data in ConfigurationManager: " + data);
+        Debug.Log("Received data in GameManager: " + data);
         if (data.Contains("WidgetDTOs"))
         {
             StartConfiguration(data);
             if (isSetConf)
             {
-                viewManager.StartActivityDisplayPanel();  
+                //viewManager.StartActivityDisplayPanel();
+                //BluetoothServiceObject.PauseCoroutine();
+                DisablePairingPanel();
+                Invoke(nameof(EnableDisplayPanel), 0.1f);
+                GameObject.FindGameObjectWithTag("Display").SetActive(true);
+                //BluetoothServiceObject.ResumeCoroutine();
+                //viewManager.EnableDisableViews("Pairing", "Display");
                 LogcatLogger.Log("Changed to Display view");
             }
                 
         }
             
-        if (data.Contains("CommandDTO"))
+        if (data.Contains("Command"))
+        {
+            BluetoothServiceObject.PauseCoroutine();
             StartCommandActions(data);
+            BluetoothServiceObject.ResumeCoroutine();
+        }
+            
         
         //Start Activity without command from smartphone for now
         //StartActivity();
@@ -328,6 +299,7 @@ public class ConfigurationManager : MonoBehaviour
     }
     public void StartActivity()
     {
+        toastMessage.showMessage("Activity Started", 0f);
         CountdownTimerObject.StartCountdown();
         if (newRun)
         {
@@ -336,7 +308,7 @@ public class ConfigurationManager : MonoBehaviour
         }
         else
         {
-            LocationTrackerObject.SetActivity(false);
+            KMLNavigationObject.StartActivity();
             avatar.SetActive(true);
             avatar.GetComponent<AvatarRunner>().speed = avatarSpeed;
         }
@@ -344,14 +316,30 @@ public class ConfigurationManager : MonoBehaviour
     }
     public void StopActivity()
     {
+
         if (newRun)
         {
             LocationTrackerObject.SetActivity(false);
+            LocationTrackerObject.StopActivity();
         }
+        else
+        {
+            KMLNavigationObject.StopActivity();
+        }
+        avatar.GetComponent<AvatarRunner>().speed = 0;
+        toastMessage.showMessage("Activity Stopped", 3f);
+    }
+
+    public void SetContrast(int contrast)
+    {
+        //int contrast = CallSsd1333Object.GetDisplayContrast();
+        //LogcatLogger.Log("Level of Contrast: "+contrast);
+        CallSsd1333Object.SetDisplayContrast(contrast);
     }
 
     public void StartDebug(byte[] image)
     {
+        toastMessage.showMessage("Debug Started", 3f);
         viewManager.viewList[4].SetActive(true);
         RawImage rawImage = viewManager.viewList[4].GetComponent<RawImage>();
         Texture2D texture = new Texture2D(1, 1);
@@ -365,6 +353,7 @@ public class ConfigurationManager : MonoBehaviour
 
     public void StopDebug()
     {
+        toastMessage.showMessage("Debug Stopped", 3f);
         viewManager.viewList[4].SetActive(false);
     }
 
@@ -399,6 +388,8 @@ public class ConfigurationManager : MonoBehaviour
     {
         public string Command { get; set; }
         public byte[] Image { get; set; }
+
+        public int Value { get; set; }
     }
     public class WidgetConfiguration
     {

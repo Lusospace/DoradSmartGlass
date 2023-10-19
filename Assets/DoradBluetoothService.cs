@@ -1,5 +1,6 @@
 ﻿using Assets.Bluetooth;
 using Assets.Utilities;
+using System;
 using System.Collections;
 using System.IO;
 using System.Runtime.InteropServices.ComTypes;
@@ -7,7 +8,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class DoradBluetoothService : MonoBehaviour
+public class  DoradBluetoothService : MonoBehaviour
 {
     public const int STATE_NONE = 0;
     public const int STATE_LISTEN = 1;
@@ -18,7 +19,7 @@ public class DoradBluetoothService : MonoBehaviour
     BtStream istream;
     BtStream ostream;
     private string deviceName;
-    BluetoothSocket socket;
+    public BluetoothSocket socket;
     string receivedmsg { get; set; }
     bool isListening = false;
     public TMP_Text pairingText;
@@ -28,10 +29,13 @@ public class DoradBluetoothService : MonoBehaviour
     // Define the DataReceived event using the delegate
     public event DataReceivedHandler DataReceived;
 
+
     private Coroutine readCoroutine;
+    public bool startbluetoothconnection = false;
     void Start()
     {
         deviceName = "Redmi Note 11";
+        //deviceName = "View2 Go";
         //deviceName = "C1_Max";
     }
     public void CreateBluetoothConnection()
@@ -41,63 +45,64 @@ public class DoradBluetoothService : MonoBehaviour
 
         BluetoothDevice btDevice = null;
         //if (btAdapter.isEnabled() != false) { 
-        foreach (var device in btAdapter.getBondedDevices())
-        {
-
-            Debug.Log("bond " + device.getName());
-            if (device.getName() == deviceName)
+            foreach (var device in btAdapter.getBondedDevices())
             {
-                Debug.Log("found device");
-                btDevice = device;
-                break;
+
+                Debug.Log("bond " + device.getName());
+                if (device.getName() == deviceName)
+                {
+                    Debug.Log("found device");
+                    btDevice = device;
+                    break;
+                }
             }
-        }
 
-        if (btDevice == null)
-        {
-            Debug.Log("No btDevice device found");
-            return;
-        }
+            if (btDevice == null)
+            {
+                Debug.Log("No btDevice device found");
+                return;
+            }
 
-        try
-        {
-            var uuid = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
-            Debug.Log("uuid " + uuid);
             try
             {
-                socket = btDevice.createRfcommSocketToServiceRecord(uuid);
+                var uuid = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
+                Debug.Log("uuid " + uuid);
+                try
+                {
+                    socket = btDevice.createRfcommSocketToServiceRecord(uuid);
+                }
+                catch (System.Exception e)
+                {
+                    Debug.Log("socket " + e);
+                }
+                Debug.Log("socket " + socket);
+
+                socket?.connect();
+
+                istream = socket.getInputStream();
+                if (istream != null)
+                    pairingText.text = "Paired to " + deviceName;
+                else
+                    pairingText.text = "Pairing in progress";
+                reader = new StreamReader(istream);
+                istream.DataReceived += OnDataReceived;
+                
             }
             catch (System.Exception e)
             {
-                Debug.Log("socket " + e);
+                reader = null;
+                Debug.Log("Start Exception: " + e);
+                socket.SetIsConnected(false);
+                try
+                {
+                    socket?.close();
+                }
+                catch (System.Exception ex)
+                {
+
+                    Debug.Log("Start Exception: " + ex);
+                }
             }
-            Debug.Log("socket " + socket);
-
-            socket?.connect();
-
-            istream = socket.getInputStream();
-
-            istream.DataReceived += OnDataReceived;
-
-            reader = new StreamReader(istream);
-            pairingText.text = "Waiting for configuration, connected to " + deviceName;
-            Debug.Log("wrote");
-        }
-        catch (System.Exception e)
-        {
-            reader = null;
-            Debug.Log("Start Exception: " + e);
-            socket.SetIsConnected(false);
-            try
-            {
-                socket?.close();
-            }
-            catch (System.Exception ex)
-            {
-
-                Debug.Log("Start Exception: " + ex);
-            }
-        }
         //}
     }
     public void SendData(string msg)
@@ -129,50 +134,67 @@ public class DoradBluetoothService : MonoBehaviour
     }
     public void StartReadCouroutine()
     {
-        try
-        {
-            readCoroutine = StartCoroutine(ReadCoroutine());
-        }
-        catch (System.Exception e)
-        {
-            Debug.Log(e);
-        }
+        
+            try
+            {
+                startbluetoothconnection = true;
+                readCoroutine = StartCoroutine(ReadCoroutine());
+            }
+            catch (System.Exception e)
+            {
+                Debug.Log(e);
+            }
+
         
     }
     private IEnumerator ReadCoroutine()
     {
+        float interval = 0.1f; // Adjust this interval as needed
 
-            float interval = 0.1f; // Adjust this interval as needed
-            while (true)
+        while (startbluetoothconnection)
+        {
+            // Check the connection status and try to reconnect if necessary
+            if (socket == null || !IsConnected())
             {
-                // Check the connection status and try to reconnect if necessary
-                if (socket == null || !IsConnected())
+                Debug.Log("Connection lost or not established. Reconnecting...");
+                reader = null;
+                CreateBluetoothConnection();
+            }
+            else if (reader != null)
+            {
+                try
                 {
-                    Debug.Log("Connection lost or not established. Reconnecting...");
-                    reader = null;
-                    CreateBluetoothConnection();
-                }
-                else
-                {
-                    reader?.ReadLine();
-                    /*try
+                    string line = reader.ReadLine();
+                    if (line != null)
                     {
-                    
+                        Debug.Log("line: " + line);
                     }
-                    catch (System.Exception e)
-                    {
-                        Debug.Log("Read Exception: " + e);
-                        CreateBluetoothConnection();
-                    }*/
-
                 }
+                catch (System.Exception e)
+                {
+                    Debug.Log("Read Exception: " + e);
+                    // Handle the exception or disconnect/reconnect as needed
+                }
+            }
 
             // Wait for a specific interval before continuing
-            yield return new WaitForSeconds(interval);
+            yield return null; // new WaitForSeconds(interval);
         }
+    }
+
+
+    public void PauseCoroutine()
+    {
         
-    } 
-     
+        startbluetoothconnection = false;
+}
+
+    public void ResumeCoroutine()
+    {
+        startbluetoothconnection = true;
+
+    }
+
 
     void OnDataReceived(object sender, string data)
     {
@@ -180,8 +202,17 @@ public class DoradBluetoothService : MonoBehaviour
         receivedmsg = data;
         Debug.Log("Received data: " + data);
 
-        // Raise the DataReceived event to notify subscribers (e.g., ConfigurationManager)
-        DataReceived?.Invoke(sender, data);
+        // Raise the DataReceived event to notify subscribers (e.g., GameManager)
+        if (data!= null){
+            DataReceived?.Invoke(sender, data);
+        }
+        else
+        {
+            reader.Close();
+            reader = null;
+            //socket.close();
+        }
+        
     }
     // Check if the Bluetooth socket is connected
     bool IsConnected()

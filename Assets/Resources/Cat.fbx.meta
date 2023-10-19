@@ -3,7 +3,22 @@ guid: 34ef64ee459653a4dacb7b624f825aa2
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CatOrange
+    second: {fileID: 2100000, guid: 00d53d8c4a2c4f54f9a6ecab810f05c4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ConstructionGear
+    second: {fileID: 2100000, guid: 00d53d8c4a2c4f54f9a6ecab810f05c4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ParthatAndBowtie
+    second: {fileID: 2100000, guid: 00d53d8c4a2c4f54f9a6ecab810f05c4, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

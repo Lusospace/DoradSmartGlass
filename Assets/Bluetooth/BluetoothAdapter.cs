@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using UnityEngine;
 
@@ -36,8 +37,16 @@ namespace Assets.Bluetooth
 
         public bool isEnabled()
         {
-
-            return JavaObject.Call<bool>("isEnabled");
+            try
+            {
+                return JavaObject.Call<bool>("isEnabled");
+            }
+            catch (Exception e)
+            {
+                Debug.Log(e);
+                return false;
+            }
+            
 
         }
 

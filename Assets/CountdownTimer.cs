@@ -7,14 +7,9 @@ public class CountdownTimer : MonoBehaviour
     public TMP_Text countdownText;
     public int countdownDuration = 3;
 
-    void Start()
-    {
-        // Start the countdown when the script is initialized.
-
-    }
-
     public void StartCountdown()
     {
+        countdownText.text = "3";
         StartCoroutine(CountdownCoroutine());
     }
 

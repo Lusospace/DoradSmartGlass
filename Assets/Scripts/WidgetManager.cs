@@ -36,7 +36,7 @@ public class WidgetManager : MonoBehaviour
 #if UNITY_ANDROID
         percentage = GetBatteryLevel();
 #endif
-        battery.text = percentage.ToString()+ "%";
+        battery.text = percentage.ToString() + "%";
         //_battery_text.text = percentage.ToString() + "%";
         clock.text = System.DateTime.UtcNow.ToString("HH:mm:ss");
         //_clock_text.text = System.DateTime.UtcNow.ToString("HH:mm:ss");
