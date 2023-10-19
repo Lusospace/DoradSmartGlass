@@ -16,6 +16,7 @@ namespace Assets.Bluetooth
         // Define an event for data reception
         public event EventHandler<string> DataReceived;
 
+
         private enum ReadState
         {
             WaitingForHeader,
@@ -143,11 +144,24 @@ namespace Assets.Bluetooth
                     }
                     
                 }
+                else if (r == 0)
+                {
+                    // End of the stream, handle it accordingly
+                    // For example, you can log a message or perform cleanup
+                    message = null;
+                    OnDataReceived(message);
+                    //Debug.Log("End of the stream");
+                    //LogcatLogger.Log("End of the stream");
+                    
+                // You may also want to raise an event or perform other cleanup actions
+                }
                 else
                 {
                     Debug.Log("Bluetooth communication");
                     LogcatLogger.Log("Bluetooth communication");
-                }
+                    message = null;
+                    OnDataReceived(message);
+            }
                 return r;
 
                 /*}
@@ -195,7 +209,10 @@ namespace Assets.Bluetooth
         // Helper method to raise the DataReceived event
         protected virtual void OnDataReceived(string data)
         {
+            
             DataReceived?.Invoke(this, data);
+            
         }
+     
     }
 }

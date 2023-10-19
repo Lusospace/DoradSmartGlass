@@ -8,7 +8,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class DoradBluetoothService : MonoBehaviour
+public class  DoradBluetoothService : MonoBehaviour
 {
     public const int STATE_NONE = 0;
     public const int STATE_LISTEN = 1;
@@ -19,7 +19,7 @@ public class DoradBluetoothService : MonoBehaviour
     BtStream istream;
     BtStream ostream;
     private string deviceName;
-    BluetoothSocket socket;
+    public BluetoothSocket socket;
     string receivedmsg { get; set; }
     bool isListening = false;
     public TMP_Text pairingText;
@@ -31,10 +31,11 @@ public class DoradBluetoothService : MonoBehaviour
 
 
     private Coroutine readCoroutine;
+    public bool startbluetoothconnection = false;
     void Start()
     {
-        //deviceName = "Redmi Note 11";
-        deviceName = "View2 Go";
+        deviceName = "Redmi Note 11";
+        //deviceName = "View2 Go";
         //deviceName = "C1_Max";
     }
     public void CreateBluetoothConnection()
@@ -79,10 +80,13 @@ public class DoradBluetoothService : MonoBehaviour
                 socket?.connect();
 
                 istream = socket.getInputStream();
+                if (istream != null)
+                    pairingText.text = "Paired to " + deviceName;
+                else
+                    pairingText.text = "Pairing in progress";
                 reader = new StreamReader(istream);
                 istream.DataReceived += OnDataReceived;
-                pairingText.text = "Waiting for configuration, connected to " + deviceName;
-                Debug.Log("wrote");
+                
             }
             catch (System.Exception e)
             {
@@ -130,51 +134,67 @@ public class DoradBluetoothService : MonoBehaviour
     }
     public void StartReadCouroutine()
     {
-        try
-        {
-            readCoroutine = StartCoroutine(ReadCoroutine());
-        }
-        catch (System.Exception e)
-        {
-            Debug.Log(e);
-        }
+        
+            try
+            {
+                startbluetoothconnection = true;
+                readCoroutine = StartCoroutine(ReadCoroutine());
+            }
+            catch (System.Exception e)
+            {
+                Debug.Log(e);
+            }
+
         
     }
     private IEnumerator ReadCoroutine()
     {
+        float interval = 0.1f; // Adjust this interval as needed
 
-            float interval = 0.1f; // Adjust this interval as needed
-            while (true)
+        while (startbluetoothconnection)
+        {
+            // Check the connection status and try to reconnect if necessary
+            if (socket == null || !IsConnected())
             {
-                // Check the connection status and try to reconnect if necessary
-                if (socket == null || !IsConnected())
+                Debug.Log("Connection lost or not established. Reconnecting...");
+                reader = null;
+                CreateBluetoothConnection();
+            }
+            else if (reader != null)
+            {
+                try
                 {
-                    Debug.Log("Connection lost or not established. Reconnecting...");
-                    reader = null;
-                    CreateBluetoothConnection();
+                    string line = reader.ReadLine();
+                    if (line != null)
+                    {
+                        Debug.Log("line: " + line);
+                    }
                 }
-                else
+                catch (System.Exception e)
                 {
-                    
-                    try
-                    {
-                        //reader?.ReadLine();
-                        if (reader != null)
-                        Debug.Log("line: " + reader.ReadLine());
-                    }
-                    catch (System.Exception e)
-                    {
-                        Debug.Log("Read Exception: " + e);
-                    }
-
+                    Debug.Log("Read Exception: " + e);
+                    // Handle the exception or disconnect/reconnect as needed
                 }
+            }
 
             // Wait for a specific interval before continuing
-            yield return new WaitForSeconds(interval);
+            yield return null; // new WaitForSeconds(interval);
         }
+    }
+
+
+    public void PauseCoroutine()
+    {
         
-    } 
-     
+        startbluetoothconnection = false;
+}
+
+    public void ResumeCoroutine()
+    {
+        startbluetoothconnection = true;
+
+    }
+
 
     void OnDataReceived(object sender, string data)
     {
@@ -182,8 +202,17 @@ public class DoradBluetoothService : MonoBehaviour
         receivedmsg = data;
         Debug.Log("Received data: " + data);
 
-        // Raise the DataReceived event to notify subscribers (e.g., ConfigurationManager)
-        DataReceived?.Invoke(sender, data);
+        // Raise the DataReceived event to notify subscribers (e.g., GameManager)
+        if (data!= null){
+            DataReceived?.Invoke(sender, data);
+        }
+        else
+        {
+            reader.Close();
+            reader = null;
+            //socket.close();
+        }
+        
     }
     // Check if the Bluetooth socket is connected
     bool IsConnected()

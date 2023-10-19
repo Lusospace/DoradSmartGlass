@@ -41,7 +41,9 @@ public class LocationTracker : MonoBehaviour
         // Check for location permission
         latitude_pre = 0.0f;
         longitude_pre = 0.0f;
-        
+        StartKMLWriting();
+
+
 
     }
     void StartKMLWriting()
@@ -143,6 +145,7 @@ public class LocationTracker : MonoBehaviour
                 List<RoutePoint> routePoints = LoadKMLData();
                 string json = ConvertRoutePointsToJson(routePoints);
                 Debug.Log(json);
+                GameManager.Instance.SendBluetoothData(json);
             }
         }
     }
@@ -155,7 +158,7 @@ public class LocationTracker : MonoBehaviour
         xmlDoc.Load(kmlFileName);
 
         // Retrieve the coordinates from the KML data
-        XmlNamespaceManager nsManager = new XmlNamespaceManager(xmlDoc.NameTable);
+        XmlNamespaceManager nsManager = new(xmlDoc.NameTable);
         nsManager.AddNamespace("kml", "http://www.opengis.net/kml/2.2");
 
         XmlNodeList coordinateNodes = xmlDoc.SelectNodes("//kml:coordinates", nsManager);
@@ -167,9 +170,8 @@ public class LocationTracker : MonoBehaviour
                 foreach (string coordinateString in coordinateStrings)
                 {
                     string[] coordinate = coordinateString.Trim().Split(',');
-                    float longitude, latitude;
-                    if (float.TryParse(coordinate[0], out longitude) &&
-                        float.TryParse(coordinate[1], out latitude))
+                    if (float.TryParse(coordinate[0], out float longitude) &&
+                        float.TryParse(coordinate[1], out float latitude))
                     {
                         RoutePoint waypoint = new RoutePoint
                         {
@@ -243,7 +245,7 @@ public class LocationTracker : MonoBehaviour
     public void SetActivity(bool activity) { isActivityStarted = activity; }
     public void StartActivity()
     {
-        StartKMLWriting();
+        Invoke("StartKMLWriting",3f);
         SetActivity(true);
 
     }

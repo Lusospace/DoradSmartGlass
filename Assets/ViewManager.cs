@@ -13,15 +13,16 @@ public class ViewManager : MonoBehaviour
         GoodBye,
         Debug
     }
-
+    [SerializeField]
     public GameObject[] viewList;
     private Dictionary<ViewState, int> viewIndexMap = new Dictionary<ViewState, int>();
     private ViewState currentViewState;
+    private int currentViewIndex = -1;
 
     private void Start()
     {
-        InitializeViewIndexMap();
-        //SwitchViewState(ViewState.Welcome);
+        //InitializeViewIndexMap();
+        SwitchViewState(ViewState.Welcome);
     }
 
     private void InitializeViewIndexMap()
@@ -34,13 +35,18 @@ public class ViewManager : MonoBehaviour
 
     private void SwitchViewState(ViewState newState)
     {
-        foreach (var view in viewList)
+        // Deactivate the current view
+        if (currentViewIndex >= 0 && currentViewIndex < viewList.Length)
         {
-            view.SetActive(false);
+            viewList[currentViewIndex].SetActive(false);
         }
 
-        viewList[viewIndexMap[newState]].SetActive(true);
-        currentViewState = newState;
+        // Activate the new view
+        currentViewIndex = (int)newState;
+        if (currentViewIndex >= 0 && currentViewIndex < viewList.Length)
+        {
+            viewList[currentViewIndex].SetActive(true);
+        }
     }
 
     private IEnumerator DelayedSwitchViewState(ViewState newState, float delay)
@@ -48,38 +54,56 @@ public class ViewManager : MonoBehaviour
         yield return new WaitForSeconds(delay);
         SwitchViewState(newState);
     }
+    public void StartActivityWelcomePanel()
+    {
+        StartCoroutine(DelayedSwitchViewState(ViewState.Welcome, 0f));
 
+    }
     public void StartActivityPairingPanel()
     {
         StartCoroutine(DelayedSwitchViewState(ViewState.Pairing, 5f));
 
     }
 
-    public void StartActivityWelcomePanel()
-    {
-        StartCoroutine(DelayedSwitchViewState(ViewState.Welcome, 0f));
-        
-    }
-
     public void StartActivityDisplayPanel()
     {
         //preview widgets
         //SwitchViewState(ViewState.Display);
-        StartCoroutine(DelayedSwitchViewState(ViewState.Display, 5f));
+        StartCoroutine(DelayedSwitchViewState(ViewState.Display, 0f));
     }
     public void StartActivityCompletePanel()
     {
         //SwitchViewState(ViewState.Complete);
-        StartCoroutine(DelayedSwitchViewState(ViewState.Complete, 10f));
+        StartCoroutine(DelayedSwitchViewState(ViewState.Complete, 30f));
     }
     public void StartActivityGoodByePanel()
     {
         //SwitchViewState(ViewState.GoodBye);
-        StartCoroutine(DelayedSwitchViewState(ViewState.GoodBye, 15f));
+        StartCoroutine(DelayedSwitchViewState(ViewState.GoodBye, 40f));
     }
     public void StartActivityDebugPanel()
     {
         //SwitchViewState(ViewState.Debug);
-        StartCoroutine(DelayedSwitchViewState(ViewState.Debug,20f));
+        StartCoroutine(DelayedSwitchViewState(ViewState.Debug,50f));
+    }
+    private GameObject FindViewByName(string viewName)
+    {
+        return System.Array.Find(viewList, view => view.tag == viewName);
+    }
+    public void EnableDisableViews(string currentView, string nextView)
+    {
+        // Deactivate the current view
+        GameObject currentViewObject = FindViewByName(currentView);
+        if (currentViewObject != null)
+        {
+            currentViewObject.SetActive(false);
+        }
+
+        // Activate the next view
+        GameObject nextViewObject = FindViewByName(nextView);
+        if (nextViewObject != null)
+        {
+            nextViewObject.SetActive(true);
+        }
     }
 }

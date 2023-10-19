@@ -5,6 +5,7 @@ using UnityEngine;
 using System.IO;
 using UnityEngine.Networking;
 using TMPro;
+using Unity.VisualScripting;
 
 public class KMLNavigation : MonoBehaviour
 {
@@ -23,39 +24,30 @@ public class KMLNavigation : MonoBehaviour
     public GameObject endpoint;
     public GameObject currentpoint;
     public GameObject left, right, forward, backward;
+    bool startActivity = false;
 
-    public float scale = 1f; // Scale factor for the LineRenderer
+    public float scale = 10f; // Scale factor for the LineRenderer
     public Vector2 transposeVector = Vector2.zero; // Transpose vector for the LineRenderer
 
     void Start()
     {
-        
+        Input.location.Start();
     }
+
     public void StartActivity()
     {
-        startpoint.gameObject.SetActive(true);
-        endpoint.gameObject.SetActive(true);
-        Input.location.Start();
         kmlFileName = "route2.kml";
         kmlFileName = GetKMLFilePath();
         Debug.Log(kmlFileName);
         LoadKMLData();
 
         // Configure LineRenderer properties
-        lineRenderer.startWidth = 0.1f; // Adjust the line width as needed
-        lineRenderer.endWidth = 0.1f;
-        lineRenderer.useWorldSpace = true; // Set to false if you want to use local positions
+        lineRenderer.startWidth = 1f; // Adjust the line width as needed
+        lineRenderer.endWidth = 1f;
+        lineRenderer.useWorldSpace = false; // Set to false if you want to use local positions
 
         // Initialize start and end markers
-        if (waypoints.Count > 0)
-        {
-            startCoordinate = waypoints[0];
-            endCoordinate = waypoints[waypoints.Count - 1];
-            start.text = startCoordinate.ToString();
-            end.text = endCoordinate.ToString();
-            startpoint.transform.localPosition = startCoordinate;
-            endpoint.transform.localPosition = endCoordinate;
-        }
+        
         // Set the initial LineRenderer positions
         lineRenderer.positionCount = waypoints.Count;
 
@@ -69,21 +61,46 @@ public class KMLNavigation : MonoBehaviour
 
         // Apply initial scaling and transposing
         UpdateLineRenderer();
-    }
+        if (waypoints.Count > 0)
+        {
+            startCoordinate = waypoints[0];
+            endCoordinate = waypoints[^1];
+            //start.text = startCoordinate.ToString();
+            //end.text = endCoordinate.ToString();
+            startpoint.transform.localPosition = startCoordinate;
+            endpoint.transform.localPosition = endCoordinate;
+            startpoint.SetActive(true);
+            endpoint.SetActive(true);
+        }
+        startActivity = true;
 
+    }
+    private void UpdateRunning()
+    {
+        if (startActivity)
+        {
+
+            if (waypoints.Count == 0)
+                return;
+
+            // Update current GPS position from Android device
+            currentGPSPosition = GetGPSPosition();
+            currentpoint.transform.localPosition = currentGPSPosition;
+
+            MoveToWaypoint();
+            UpdateLineRenderer();
+        }
+    }
     void Update()
     {
-        if (waypoints.Count == 0)
-            return;
-
-        // Update current GPS position from Android device
-        currentGPSPosition = GetGPSPosition();
-        currentpoint.transform.localPosition = currentGPSPosition;
-
-        MoveToWaypoint();
-        UpdateLineRenderer();
+        Invoke(nameof(UpdateRunning), 1f);
     }
 
+    public void StopActivity()
+    {
+        startActivity = false;
+
+    }
     private string GetKMLFilePath()
     {
         string streamingAssetsPath = Application.streamingAssetsPath;
@@ -141,8 +158,9 @@ public class KMLNavigation : MonoBehaviour
                     float longitude, latitude;
                     if (float.TryParse(coordinate[0], out longitude) &&
                         float.TryParse(coordinate[1], out latitude))
+                        
                     {
-                        Vector2 waypoint = new Vector2(longitude, latitude);
+                        Vector2 waypoint = new Vector2(longitude*10, latitude*10);
 
                         // Check if the waypoint is unique, then add it to the dictionary
                         if (!uniqueWaypoints.ContainsKey(waypoint))
@@ -267,6 +285,8 @@ public class KMLNavigation : MonoBehaviour
 
         for (int i = 0; i < waypoints.Count; i++)
         {
+            if (i == 0)
+                transposeVector = waypoints[i];
             Vector2 scaledAndTransposedWaypoint = ScaleAndTransposeWaypoint(waypoints[i]);
             lineRenderer.SetPosition(i, new Vector3(scaledAndTransposedWaypoint.x, scaledAndTransposedWaypoint.y, 0f));
         }
@@ -274,7 +294,7 @@ public class KMLNavigation : MonoBehaviour
     private Vector2 ScaleAndTransposeWaypoint(Vector2 waypoint)
     {
         // Apply scaling and transposing to the waypoint
-        Vector2 scaledAndTransposedWaypoint = waypoint * scale + transposeVector;
+        Vector2 scaledAndTransposedWaypoint = (waypoint - transposeVector) * scale ;
 
         // Optionally, you can clamp the values to avoid extremely large coordinates
         //scaledAndTransposedWaypoint.x = Mathf.Clamp(scaledAndTransposedWaypoint.x, -1000f, 1000f);
